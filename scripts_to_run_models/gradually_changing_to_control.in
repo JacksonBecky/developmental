@@ -1,0 +1,50 @@
+deleteExampleSets test
+deleteExampleSets train
+loadExamples examples_testing_gradual_step_1.ex -exmode PROB -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+train 100
+deleteExampleSets test
+deleteExampleSets train
+loadExamples examples_testing_gradual_step_2.ex -exmode PROB -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+train 100
+deleteExampleSets test
+deleteExampleSets train
+loadExamples examples_testing_gradual_step_3.ex -exmode PROB -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+train 100
+deleteExampleSets test
+deleteExampleSets train
+loadExamples examples_testing_gradual_step_4.ex -exmode PROB -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+train 100
+deleteExampleSets test
+deleteExampleSets train
+loadExamples examples_testing_gradual_step_5.ex -exmode PROB -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+train 100
+deleteExampleSets test
+deleteExampleSets train
+loadExamples examples_testing_gradual_step_6.ex -exmode PROB -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+train 100
+deleteExampleSets test
+deleteExampleSets train
+loadExamples examples_testing_gradual_step_7.ex -exmode PROB -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+train 100
+deleteExampleSets test
+deleteExampleSets train
+loadExamples examples_testing_gradual_step_8.ex -exmode PROB -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+train 100
+deleteExampleSets test
+deleteExampleSets train
+loadExamples examples_testing_gradual_step_9.ex -exmode PROB -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+train 100
+deleteExampleSets test
+deleteExampleSets train
+loadExamples examples_orig_control.ex -exmode PERM -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+train 20000

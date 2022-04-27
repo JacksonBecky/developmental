@@ -1,0 +1,128 @@
+addNet hier -i 6 -t 4 CONTINUOUS
+
+addGroup m1 12 INPUT
+addGroup m2 12 INPUT
+addGroup m3 12 INPUT
+
+
+#control only
+addGroup Control 3 INPUT
+
+addGroup m1rep 12 OUTPUT CROSS_ENTROPY -BIASED 
+addGroup m2rep 12 OUTPUT CROSS_ENTROPY -BIASED
+addGroup m3rep 12 OUTPUT CROSS_ENTROPY -BIASED
+
+addGroup m1m2 7
+addGroup m2m1 7
+addGroup m1m3 7
+addGroup m3m1 7
+addGroup m2m3 7
+addGroup m3m2 7
+
+addGroup atl 18
+
+#Set biases on feature units to -3
+connectGroups bias m1rep -m -3 -r 0
+connectGroups bias m2rep -m -3 -r 0
+connectGroups bias m3rep -m -3 -r 0
+
+#Make sure biases on feature units can't learn
+freezeWeights -g {m1rep m2rep m3rep} -t bias
+
+#Connect input features to corresponding feature units with
+#a weight of +6, so net input for active features will be
+#+3 and for inactive features will be -3
+connectGroups m1 m1rep -p ONE_TO_ONE -m 6 -r 0
+connectGroups m2 m2rep -p ONE_TO_ONE -m 6 -r 0
+connectGroups m3 m3rep -p ONE_TO_ONE -m 6 -r 0
+
+#Self-connections among feature units
+connectGroups m1rep m1rep
+connectGroups m2rep m2rep
+connectGroups m3rep m3rep
+
+#control only - FOR NOW FULLY CONN TO ALL SPOKES + HU UNILATERALLY
+#all commands for full connection from control to the rest of the model
+#these commands connect control to the spokes - comment out if want Hub/Intermediate connections only
+connectGroups Control m1rep -range 0.2 
+connectGroups Control m2rep -range 0.2 
+connectGroups Control m3rep -range 0.2 
+#these commands connect control to the Intermediate layer - comment out if want spokes/hub connections only
+connectGroups Control m1m2 -range 0.2 
+connectGroups Control m1m3 -range 0.2 
+connectGroups Control m2m1 -range 0.2 
+connectGroups Control m2m3 -range 0.2 
+connectGroups Control m3m1 -range 0.2 
+connectGroups Control m3m2 -range 0.2 
+#these commands connect control to the hub - comment out if want spokes/intermediate connections only
+connectGroups Control atl -range 0.2 
+
+#Self-connections among hidden unit layers - half conn to self and half conn to equivalent so one route not 2 for this new version of deep C/c&d
+connectGroups m1m2 m1m2 -p RANDOM -s 0.5
+connectGroups m1m3 m1m3 -p RANDOM -s 0.5
+connectGroups m2m1 m2m1 -p RANDOM -s 0.5
+connectGroups m2m3 m2m3 -p RANDOM -s 0.5
+connectGroups m3m1 m3m1 -p RANDOM -s 0.5
+connectGroups m3m2 m3m2 -p RANDOM -s 0.5
+
+connectGroups m1m2 m1m3 -bi -p RANDOM -s 0.5
+connectGroups m2m1 m2m3 -bi -p RANDOM -s 0.5
+connectGroups m3m1 m3m2 -bi -p RANDOM -s 0.5
+
+connectGroups atl atl
+
+#connect feature units to their paired hidden layers
+connectGroups m1rep m1m2 -bi
+connectGroups m1rep m1m3 -bi
+connectGroups m2rep m2m1 -bi
+connectGroups m2rep m2m3 -bi
+connectGroups m3rep m3m1 -bi
+connectGroups m3rep m3m2 -bi
+
+#Connections among first layer hidden units (separate paths)- i.e. B (or shallow C but more conn across all diff group)
+#Comment/uncomment to exclude/include
+#connectGroups m1m2 m2m1 -bi 
+#connectGroups m1m3 m3m1 -bi
+#connectGroups m2m3 m3m2 -bi 
+
+#direct paths amongst surface representations: - only in A
+#comment/uncomment to exclude/include these
+#connectGroups m1rep m2rep -bi
+#connectGroups m1rep m3rep -bi
+#connectGroups m2rep m3rep -bi
+
+#Connect sep paths to hub - sparse here to match other arch i.e. deep C + B&C (at diff sparsity levels) - vary depending on #conn left after added skip conn
+#Comment/uncomment to exclude/include
+connectGroups m1m2 atl -bi -p RANDOM -s 0.634920635
+connectGroups m2m1 atl -bi -p RANDOM -s 0.634920635
+connectGroups m1m3 atl -bi -p RANDOM -s 0.634920635
+connectGroups m3m1 atl -bi -p RANDOM -s 0.634920635
+connectGroups m2m3 atl -bi -p RANDOM -s 0.634920635
+connectGroups m3m2 atl -bi -p RANDOM -s 0.634920635
+
+
+#connect spokes to hub sparsely (skip conn) - here 1/24 of poss conn
+#Comment/uncomment to exclude/include - only include for D
+connectGroups m1rep atl -bi -p RANDOM -s 0.041666667
+connectGroups m2rep atl -bi -p RANDOM -s 0.041666667
+connectGroups m3rep atl -bi -p RANDOM -s 0.041666667
+
+
+#CHANGED FOR CONTROL- HERE NO CONTROL TO START but repeat ex 3 times so learning episodes matched for with and without control epochs
+loadExamples examples_orig_control.ex -exmode PER -set train
+loadExamples examples_orig_control.ex -exmod ORD -set test
+
+setObj learningRate 0.001
+setObj numUpdates 800000
+setObj weightDecay 0.0001
+
+#Training will stop when output units are less than 0.2 from target:
+setObj trainGroupCrit 0.2
+setObj testGroupCrit 0.2
+
+#train on 1/3 examples only so leanring episodes same for contorl and no control
+setObj batchSize 48
+
+#change algorithm but don't start training
+#train -a steepest -setOnly
+train -a steepest
